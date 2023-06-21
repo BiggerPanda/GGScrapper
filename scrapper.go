@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 
+	"github.com/gen2brain/beeep"
 	"github.com/gocolly/colly"
 )
 
@@ -22,7 +23,10 @@ func main() {
 	c := colly.NewCollector(colly.CacheDir("./ggdeals_cache"))
 	initCollectro(c, &games)
 	c.Visit(baseURL)
-
+	err := beeep.Notify("Title", "Message body", "assets/information.png")
+	if err != nil {
+		panic(err)
+	}
 }
 
 func initCollectro(c *colly.Collector, games *[]Game) {
