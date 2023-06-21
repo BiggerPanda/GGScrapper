@@ -1,8 +1,10 @@
 package main
 
 import (
+	"bufio"
 	"fmt"
 	"log"
+	"os"
 
 	"github.com/gen2brain/beeep"
 	"github.com/gocolly/colly"
@@ -15,17 +17,30 @@ type Game struct {
 	link  string
 }
 
-func main() {
-	baseURL := "https://gg.deals/game/satisfactory/"
+func check(e error) {
+	if e != nil {
+		panic(e)
+	}
+}
 
-	fmt.Println("Hello World")
-	games := []Game{}
-	c := colly.NewCollector(colly.CacheDir("./ggdeals_cache"))
-	initCollectro(c, &games)
-	c.Visit(baseURL)
-	err := beeep.Notify("Title", "Message body", "assets/information.png")
-	if err != nil {
-		panic(err)
+func main() {
+
+	// read the base url from file
+	dat, err := os.Open("games.txt")
+	check(err)
+	defer dat.Close()
+
+	scanner := bufio.NewScanner(dat)
+
+	for scanner.Scan() {
+		baseURL := scanner.Text()
+		fmt.Println("Scraping: ", baseURL)
+		games := []Game{}
+		c := colly.NewCollector(colly.CacheDir("./ggdeals_cache"))
+		initCollectro(c, &games)
+		c.Visit(baseURL)
+		err2 := beeep.Notify("Title", "Message body", "assets/information.png")
+		check(err2)
 	}
 }
 
