@@ -2,19 +2,21 @@ package main
 
 import (
 	"bufio"
+	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"os"
+	"strings"
 
-	"github.com/gen2brain/beeep"
 	"github.com/gocolly/colly"
 )
 
 type Game struct {
-	name  string
-	shop  string
-	price string
-	link  string
+	Name     string
+	ShopName string
+	Price    string
+	Link     string
 }
 
 func check(e error) {
@@ -39,8 +41,18 @@ func main() {
 		c := colly.NewCollector(colly.CacheDir("./ggdeals_cache"))
 		initCollectro(c, &games)
 		c.Visit(baseURL)
-		err2 := beeep.Notify("Title", "Message body", "assets/information.png")
-		check(err2)
+		// err2 := beeep.Notify("Title", "Message body", "assets/information.png")
+		// check(err2)
+		gameJSON, err := json.Marshal(games)
+		check(err)
+		fmt.Println(string(gameJSON))
+		gamename := baseURL[22:]
+		filename := strings.Trim(gamename, "/") + ".json"
+		f, err := os.Create(filename)
+		check(err)
+		defer f.Close()
+		err3 := ioutil.WriteFile(filename, gameJSON, 0644)
+		check(err3)
 	}
 }
 
@@ -62,11 +74,11 @@ func initCollectro(c *colly.Collector, games *[]Game) {
 		i := 1
 		e.ForEach("div.similar-deals-container.items-with-top-border-desktop", func(_ int, el *colly.HTMLElement) {
 			game := Game{}
-			game.name = el.ChildAttr("div.relative.hoverable-box.d-flex.flex-wrap.flex-align-center.game-item.cta-full.item.game-deals-item.game-list-item.keep-unmarked-container", "data-game-name")
-			game.shop = el.ChildAttr("div.relative.hoverable-box.d-flex.flex-wrap.flex-align-center.game-item.cta-full.item.game-deals-item.game-list-item.keep-unmarked-container", "data-shop-name")
-			game.price = el.ChildText(".price-inner.game-price-current")
+			game.Name = el.ChildAttr("div.relative.hoverable-box.d-flex.flex-wrap.flex-align-center.game-item.cta-full.item.game-deals-item.game-list-item.keep-unmarked-container", "data-game-name")
+			game.ShopName = el.ChildAttr("div.relative.hoverable-box.d-flex.flex-wrap.flex-align-center.game-item.cta-full.item.game-deals-item.game-list-item.keep-unmarked-container", "data-shop-name")
+			game.Price = el.ChildText(".price-inner.game-price-current")
 			link := el.ChildAttr(".full-link", "href")
-			game.link = el.Request.AbsoluteURL(link)
+			game.Link = el.Request.AbsoluteURL(link)
 			*games = append(*games, game)
 			fmt.Println("Game: ", i)
 			i++
