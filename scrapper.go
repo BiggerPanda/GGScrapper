@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
+	"strconv"
 	"strings"
 
 	"github.com/gocolly/colly"
@@ -15,45 +16,12 @@ import (
 type Game struct {
 	Name     string
 	ShopName string
-	Price    string
+	Price    []float64
 	Link     string
 }
 
-func check(e error) {
-	if e != nil {
-		panic(e)
-	}
-}
-
 func main() {
-
-	// read the base url from file
-	dat, err := os.Open("games.txt")
-	check(err)
-	defer dat.Close()
-
-	scanner := bufio.NewScanner(dat)
-
-	for scanner.Scan() {
-		baseURL := scanner.Text()
-		fmt.Println("Scraping: ", baseURL)
-		games := []Game{}
-		c := colly.NewCollector(colly.CacheDir("./ggdeals_cache"))
-		initCollectro(c, &games)
-		c.Visit(baseURL)
-		// err2 := beeep.Notify("Title", "Message body", "assets/information.png")
-		// check(err2)
-		gameJSON, err := json.Marshal(games)
-		check(err)
-		fmt.Println(string(gameJSON))
-		gamename := baseURL[22:]
-		filename := strings.Trim(gamename, "/") + ".json"
-		f, err := os.Create(filename)
-		check(err)
-		defer f.Close()
-		err3 := ioutil.WriteFile(filename, gameJSON, 0644)
-		check(err3)
-	}
+	checkLinks()
 }
 
 func initCollectro(c *colly.Collector, games *[]Game) {
@@ -76,7 +44,8 @@ func initCollectro(c *colly.Collector, games *[]Game) {
 			game := Game{}
 			game.Name = el.ChildAttr("div.relative.hoverable-box.d-flex.flex-wrap.flex-align-center.game-item.cta-full.item.game-deals-item.game-list-item.keep-unmarked-container", "data-game-name")
 			game.ShopName = el.ChildAttr("div.relative.hoverable-box.d-flex.flex-wrap.flex-align-center.game-item.cta-full.item.game-deals-item.game-list-item.keep-unmarked-container", "data-shop-name")
-			game.Price = el.ChildText(".price-inner.game-price-current")
+			price := el.ChildText(".price-inner.game-price-current")
+			game.Price = parsePrice(price)
 			link := el.ChildAttr(".full-link", "href")
 			game.Link = el.Request.AbsoluteURL(link)
 			*games = append(*games, game)
@@ -88,4 +57,53 @@ func initCollectro(c *colly.Collector, games *[]Game) {
 	c.OnScraped(func(r *colly.Response) {
 		fmt.Println(r.Request.URL, " scraped!")
 	})
+}
+
+func checkLinks() {
+	dat, err := os.Open("games.txt")
+	check(err)
+	defer dat.Close()
+
+	scanner := bufio.NewScanner(dat)
+	games := []Game{}
+	c := colly.NewCollector(colly.CacheDir("./ggdeals_cache"))
+	initCollectro(c, &games)
+
+	for scanner.Scan() {
+		baseURL := scanner.Text()
+		fmt.Println("Scraping: ", baseURL)
+		c.Visit(baseURL)
+		gameJSON, err := json.Marshal(games)
+		check(err)
+
+		filename := strings.Trim(baseURL[22:], "/") + ".json"
+		f, err := os.Create(filename)
+		check(err)
+		defer f.Close()
+		err = ioutil.WriteFile(filename, gameJSON, 0644)
+		check(err)
+	}
+}
+
+// parse price into list of floats
+func parsePrice(price string) []float64 {
+
+	var prices []float64
+	var temp string
+
+	for _, c := range price {
+		if c == '$' {
+			continue
+		} else if c == '.' {
+			temp += string(c)
+		} else {
+			temp += string(c)
+			price, err := strconv.ParseFloat(temp, 32)
+			check(err)
+			prices = append(prices, price)
+			temp = ""
+		}
+	}
+	return prices
+
 }
