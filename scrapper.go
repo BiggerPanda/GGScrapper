@@ -7,8 +7,10 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
-	"strconv"
+	"regexp"
 	"strings"
+
+	"web-scrapper/utility"
 
 	"github.com/gocolly/colly"
 )
@@ -61,7 +63,7 @@ func initCollectro(c *colly.Collector, games *[]Game) {
 
 func checkLinks() {
 	dat, err := os.Open("games.txt")
-	check(err)
+	utility.Check(err)
 	defer dat.Close()
 
 	scanner := bufio.NewScanner(dat)
@@ -74,36 +76,25 @@ func checkLinks() {
 		fmt.Println("Scraping: ", baseURL)
 		c.Visit(baseURL)
 		gameJSON, err := json.Marshal(games)
-		check(err)
+		utility.Check(err)
 
 		filename := strings.Trim(baseURL[22:], "/") + ".json"
 		f, err := os.Create(filename)
-		check(err)
+		utility.Check(err)
 		defer f.Close()
 		err = ioutil.WriteFile(filename, gameJSON, 0644)
-		check(err)
+		utility.Check(err)
 	}
 }
 
 // parse price into list of floats
 func parsePrice(price string) []float64 {
+	r, _ := regexp.Compile("[+-]?([0-9]*[,])?[0-9]+")
 
 	var prices []float64
-	var temp string
 
-	for _, c := range price {
-		if c == '$' {
-			continue
-		} else if c == '.' {
-			temp += string(c)
-		} else {
-			temp += string(c)
-			price, err := strconv.ParseFloat(temp, 32)
-			check(err)
-			prices = append(prices, price)
-			temp = ""
-		}
-	}
+	fmt.Println("Price: ", r.FindAllString(price, -1))
+
 	return prices
 
 }
