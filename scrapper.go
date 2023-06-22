@@ -8,6 +8,7 @@ import (
 	"log"
 	"os"
 	"regexp"
+	"strconv"
 	"strings"
 
 	"web-scrapper/utility"
@@ -94,6 +95,12 @@ func parsePrice(price string) []float64 {
 	var prices []float64
 
 	fmt.Println("Price: ", r.FindAllString(price, -1))
+	for _, p := range r.FindAllString(price, -1) {
+		p = strings.Replace(p, ",", ".", -1)
+		if s, err := strconv.ParseFloat(p, 32); err == nil {
+			prices = append(prices, s)
+		}
+	}
 
 	return prices
 
