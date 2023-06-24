@@ -22,6 +22,7 @@ type Game struct {
 }
 
 func main() {
+	checkForInputFile()
 	checkLinks()
 	checkHistory()
 }
@@ -104,19 +105,24 @@ func checkHistory() {
 	utility.Check(err)
 	defer dat.Close()
 	scanner := bufio.NewScanner(dat)
+	shouldNotify := false
+	notifyGamesName := []string{}
+
+	var gamesCurrent []Game
+	var gamesOld []Game
+
 	for scanner.Scan() {
 		filenameCurrent := "./data/" + strings.Trim(scanner.Text()[22:], "/") + ".json"
 		filenameOld := "./data/" + strings.Trim(scanner.Text()[22:], "/") + "_old.json"
+
 		if _, err := os.Stat(filenameOld); errors.Is(err, os.ErrNotExist) {
 			continue
 		}
+
 		contentCurrent, err := ioutil.ReadFile(filenameCurrent)
 		utility.Check(err)
 		contentOld, err := ioutil.ReadFile(filenameOld)
 		utility.Check(err)
-
-		var gamesCurrent []Game
-		var gamesOld []Game
 
 		err = json.Unmarshal(contentCurrent, &gamesCurrent)
 		utility.Check(err)
@@ -127,6 +133,9 @@ func checkHistory() {
 			if gamesCurrent[i].Name == gamesOld[i].Name {
 				if gamesCurrent[i].Price[0] < gamesOld[i].Price[0] {
 					fmt.Println("Game: ", gamesOld[i].Name, " is cheaper than before!")
+					shouldNotify = true
+					notifyGamesName = append(notifyGamesName, gamesOld[i].Name+" "+gamesOld[i].ShopName+" "+fmt.Sprintf("%.2f", gamesOld[i].Price[0])+" -> "+fmt.Sprintf("%.2f", gamesCurrent[i].Price[0]))
+
 				} else if gamesCurrent[i].Price[0] >= gamesOld[i].Price[0] {
 					fmt.Println("Game: ", gamesCurrent[i].Name, " is more expensive than before!")
 					if err := os.Remove(filenameOld); err != nil {
@@ -136,5 +145,37 @@ func checkHistory() {
 				}
 			}
 		}
+
+		gamesCurrent = []Game{}
+		gamesOld = []Game{}
+
+		if shouldNotify {
+			utility.Notify(notifyGamesName)
+			shouldNotify = false
+			notifyGamesName = []string{}
+		}
+	}
+}
+
+func checkForInputFile() {
+	if _, err := os.Stat("games.txt"); errors.Is(err, os.ErrNotExist) {
+		exapleLinks := []string{"https://gg.deals/game/satisfactory/",
+			"https://gg.deals/game/diablo-iv/",
+			"https://gg.deals/game/starfield/",
+			"https://gg.deals/game/elden-ring/"}
+		fmt.Println("File games.txt does not exist!")
+		fmt.Println("Creating file games.txt")
+		f, err := os.Create("games.txt")
+		utility.Check(err)
+		defer f.Close()
+		fmt.Println("Please add links to games in games.txt")
+		fmt.Println("Example: https://gg.deals/game/monster-hunter-world-iceborne/")
+		fmt.Println("Adding example link to games.txt")
+		for _, link := range exapleLinks {
+			_, err := f.WriteString(link + "\n")
+			utility.Check(err)
+		}
+		utility.Check(err)
+
 	}
 }
