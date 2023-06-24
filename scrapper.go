@@ -26,7 +26,7 @@ func main() {
 	checkHistory()
 }
 
-func initCollectro(c *colly.Collector, games *[]Game) {
+func initCollector(c *colly.Collector, games *[]Game) {
 
 	c.OnRequest(func(r *colly.Request) {
 		fmt.Println("Visiting: ", r.URL)
@@ -51,7 +51,6 @@ func initCollectro(c *colly.Collector, games *[]Game) {
 			link := el.ChildAttr(".full-link", "href")
 			game.Link = el.Request.AbsoluteURL(link)
 			*games = append(*games, game)
-			fmt.Println("Game: ", i)
 			i++
 		})
 	})
@@ -69,7 +68,7 @@ func checkLinks() {
 	scanner := bufio.NewScanner(dat)
 	games := []Game{}
 	c := colly.NewCollector(colly.CacheDir("./ggdeals_cache"))
-	initCollectro(c, &games)
+	initCollector(c, &games)
 
 	for scanner.Scan() {
 		baseURL := scanner.Text()
@@ -85,7 +84,7 @@ func checkLinks() {
 			utility.Check(err)
 			defer f.Close()
 		} else if err == nil {
-			e := os.Rename(filename, "./data/"+strings.Trim(baseURL[22:], "/")+"_old"+".json")
+			e := os.Rename(filename, "./data/"+strings.Trim(baseURL[22:], "/")+"_old.json")
 			utility.Check(e)
 			f, err := os.Create(filename)
 			utility.Check(err)
@@ -96,6 +95,7 @@ func checkLinks() {
 
 		err = ioutil.WriteFile(filename, gameJSON, 0644)
 		utility.Check(err)
+		games = []Game{}
 	}
 }
 
@@ -105,9 +105,36 @@ func checkHistory() {
 	defer dat.Close()
 	scanner := bufio.NewScanner(dat)
 	for scanner.Scan() {
-		//filename := strings.Trim(scanner.Text()[22:], "/") + ".json"
-		//content, err = ioutil.ReadFile("./data/" + filename)
+		filenameCurrent := "./data/" + strings.Trim(scanner.Text()[22:], "/") + ".json"
+		filenameOld := "./data/" + strings.Trim(scanner.Text()[22:], "/") + "_old.json"
+		if _, err := os.Stat(filenameOld); errors.Is(err, os.ErrNotExist) {
+			continue
+		}
+		contentCurrent, err := ioutil.ReadFile(filenameCurrent)
 		utility.Check(err)
-	}
+		contentOld, err := ioutil.ReadFile(filenameOld)
+		utility.Check(err)
 
+		var gamesCurrent []Game
+		var gamesOld []Game
+
+		err = json.Unmarshal(contentCurrent, &gamesCurrent)
+		utility.Check(err)
+		err = json.Unmarshal(contentOld, &gamesOld)
+		utility.Check(err)
+
+		for i := 0; i < len(gamesCurrent); i++ {
+			if gamesCurrent[i].Name == gamesOld[i].Name {
+				if gamesCurrent[i].Price[0] < gamesOld[i].Price[0] {
+					fmt.Println("Game: ", gamesOld[i].Name, " is cheaper than before!")
+				} else if gamesCurrent[i].Price[0] >= gamesOld[i].Price[0] {
+					fmt.Println("Game: ", gamesCurrent[i].Name, " is more expensive than before!")
+					if err := os.Remove(filenameOld); err != nil {
+						log.Fatal(err)
+					}
+					break
+				}
+			}
+		}
+	}
 }

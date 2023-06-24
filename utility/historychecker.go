@@ -1,7 +1,6 @@
 package utility
 
 import (
-	"fmt"
 	"os"
 	"regexp"
 	"strconv"
@@ -22,7 +21,6 @@ func ParsePrice(price string) []float64 {
 
 	var prices []float64
 
-	fmt.Println("Price: ", r.FindAllString(price, -1))
 	for _, p := range r.FindAllString(price, -1) {
 		p = strings.Replace(p, ",", ".", -1)
 		if s, err := strconv.ParseFloat(p, 32); err == nil {
