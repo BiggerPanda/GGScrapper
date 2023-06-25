@@ -22,9 +22,17 @@ type Game struct {
 }
 
 func main() {
+	checkForDataFolder()
 	checkForInputFile()
 	checkLinks()
 	checkHistory()
+}
+
+func checkForDataFolder() {
+	if _, err := os.Stat("./data"); os.IsNotExist(err) {
+		err := os.Mkdir("./data", 0755)
+		utility.Check(err)
+	}
 }
 
 func initCollector(c *colly.Collector, games *[]Game) {
@@ -116,6 +124,10 @@ func checkHistory() {
 		filenameOld := "./data/" + strings.Trim(scanner.Text()[22:], "/") + "_old.json"
 
 		if _, err := os.Stat(filenameOld); errors.Is(err, os.ErrNotExist) {
+			continue
+		}
+
+		if _, err := os.Stat(filenameCurrent); errors.Is(err, os.ErrNotExist) {
 			continue
 		}
 
