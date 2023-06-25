@@ -1,6 +1,10 @@
 package utility
 
-import "github.com/gen2brain/beeep"
+import (
+	"os"
+
+	"github.com/gen2brain/beeep"
+)
 
 func Check(e error) {
 	if e != nil {
@@ -20,4 +24,11 @@ func Notify(notifyGamesName []string) {
 	}
 
 	beeep.Notify(title, message, "assets/information.png")
+}
+
+func CheckForDataFolder() {
+	if _, err := os.Stat("./data"); os.IsNotExist(err) {
+		err := os.Mkdir("./data", 0755)
+		Check(err)
+	}
 }

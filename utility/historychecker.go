@@ -5,6 +5,7 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+	"web-scrapper/models"
 )
 
 // func to check if file exists
@@ -29,4 +30,9 @@ func ParsePrice(price string) []float64 {
 	}
 
 	return prices
+}
+
+func LowestCurrentPrices(games []models.Game) []models.Game {
+	lowestGames := []models.Game{games[0], games[4]}
+	return lowestGames
 }

@@ -9,33 +9,31 @@ import (
 	"log"
 	"os"
 	"strings"
+	"web-scrapper/models"
 	"web-scrapper/utility"
 
 	"github.com/gocolly/colly"
 )
 
-type Game struct {
-	Name     string
-	ShopName string
-	Price    []float64
-	Link     string
-}
-
 func main() {
-	checkForDataFolder()
+	readCmd()
+	utility.CheckForDataFolder()
 	checkForInputFile()
 	checkLinks()
 	checkHistory()
 }
 
-func checkForDataFolder() {
-	if _, err := os.Stat("./data"); os.IsNotExist(err) {
-		err := os.Mkdir("./data", 0755)
-		utility.Check(err)
+func readCmd() {
+	input := os.Args[1:]
+
+	for _, arg := range input {
+		if arg == "display" {
+			displayBestOptions()
+		}
 	}
 }
 
-func initCollector(c *colly.Collector, games *[]Game) {
+func initCollector(c *colly.Collector, games *[]models.Game) {
 
 	c.OnRequest(func(r *colly.Request) {
 		fmt.Println("Visiting: ", r.URL)
@@ -52,7 +50,7 @@ func initCollector(c *colly.Collector, games *[]Game) {
 	c.OnHTML("div.offer-section.with-filters", func(e *colly.HTMLElement) {
 		i := 1
 		e.ForEach("div.similar-deals-container.items-with-top-border-desktop", func(_ int, el *colly.HTMLElement) {
-			game := Game{}
+			game := models.Game{}
 			game.Name = el.ChildAttr("div.relative.hoverable-box.d-flex.flex-wrap.flex-align-center.game-item.cta-full.item.game-deals-item.game-list-item.keep-unmarked-container", "data-game-name")
 			game.ShopName = el.ChildAttr("div.relative.hoverable-box.d-flex.flex-wrap.flex-align-center.game-item.cta-full.item.game-deals-item.game-list-item.keep-unmarked-container", "data-shop-name")
 			price := el.ChildText(".price-inner.game-price-current")
@@ -75,7 +73,7 @@ func checkLinks() {
 	defer dat.Close()
 
 	scanner := bufio.NewScanner(dat)
-	games := []Game{}
+	games := []models.Game{}
 	c := colly.NewCollector(colly.CacheDir("./ggdeals_cache"))
 	initCollector(c, &games)
 
@@ -104,7 +102,7 @@ func checkLinks() {
 
 		err = ioutil.WriteFile(filename, gameJSON, 0644)
 		utility.Check(err)
-		games = []Game{}
+		games = []models.Game{}
 	}
 }
 
@@ -116,8 +114,8 @@ func checkHistory() {
 	shouldNotify := false
 	notifyGamesName := []string{}
 
-	var gamesCurrent []Game
-	var gamesOld []Game
+	var gamesCurrent []models.Game
+	var gamesOld []models.Game
 
 	for scanner.Scan() {
 		filenameCurrent := "./data/" + strings.Trim(scanner.Text()[22:], "/") + ".json"
@@ -158,8 +156,8 @@ func checkHistory() {
 			}
 		}
 
-		gamesCurrent = []Game{}
-		gamesOld = []Game{}
+		gamesCurrent = []models.Game{}
+		gamesOld = []models.Game{}
 
 		if shouldNotify {
 			utility.Notify(notifyGamesName)
@@ -189,5 +187,21 @@ func checkForInputFile() {
 		}
 		utility.Check(err)
 
+	}
+}
+
+func displayBestOptions() {
+	var gamesCurrent []models.Game
+	files, err := ioutil.ReadDir("./data")
+	utility.Check(err)
+
+	for _, file := range files {
+		contentCurrent, err := ioutil.ReadFile(file.Name())
+		utility.Check(err)
+
+		err = json.Unmarshal(contentCurrent, &gamesCurrent)
+		utility.Check(err)
+
+		fmt.Println(utility.LowestCurrentPrices(gamesCurrent))
 	}
 }
