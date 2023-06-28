@@ -16,15 +16,22 @@ import (
 )
 
 func main() {
+
 	readCmd()
-	utility.CheckForDataFolder()
-	checkForInputFile()
-	checkLinks()
-	checkHistory()
+
 }
 
 func readCmd() {
 	input := os.Args[1:]
+
+	if len(os.Args) <= 1 {
+		// normal progresion
+		utility.CheckForDataFolder()
+		checkForInputFile()
+		checkLinks()
+		checkHistory()
+		return
+	}
 
 	for _, arg := range input {
 		if arg == "display" {
