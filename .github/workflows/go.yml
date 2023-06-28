@@ -1,33 +1,23 @@
-# This workflow will build a golang project
-# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-go
-
-name: Go
-
-on:
-  push:
-    branches: [ "master" ]
-  pull_request:
-    branches: [ "master" ]
-
+name: Build and test Go
+on: [push, pull_request]
 jobs:
-
   build:
+    name: Build
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v3
+      - name: Set up Go 1.13
+        uses: actions/setup-go@v1
+        with:
+          go-version: 1.18
 
-    - name: Set up Go
-      uses: actions/setup-go@v3
-      with:
-        go-version: 1.18
+      - name: Check out source code
+        uses: actions/checkout@v1
+      
+      - name: Install dependencies
+        run: go get .
 
-    - name: setup packages
-      run: |
-        go version
-        go get -u  github.com/gocolly/colly
+      - name: Build
+        run: go build .
 
-    - name: Build
-      run: go build -v ./...
-
-    - name: Test
-      run: go test -v ./...
+      - name: Test
+        run: go test -v .
