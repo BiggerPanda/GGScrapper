@@ -16,9 +16,7 @@ import (
 )
 
 func main() {
-
 	readCmd()
-
 }
 
 func readCmd() {
@@ -35,7 +33,8 @@ func readCmd() {
 
 	for _, arg := range input {
 		if arg == "display" {
-			displayBestOptions()
+			err := displayBestOptions()
+			utility.Check(err)
 		}
 	}
 }
@@ -197,13 +196,17 @@ func checkForInputFile() {
 	}
 }
 
-func displayBestOptions() {
+func displayBestOptions() error {
 	var gamesCurrent []models.Game
 	files, err := ioutil.ReadDir("./data")
 	utility.Check(err)
 
+	if files == nil {
+		return errors.New("No files in directory")
+	}
+
 	for _, file := range files {
-		contentCurrent, err := ioutil.ReadFile(file.Name())
+		contentCurrent, err := ioutil.ReadFile("./data/" + file.Name())
 		utility.Check(err)
 
 		err = json.Unmarshal(contentCurrent, &gamesCurrent)
@@ -211,4 +214,5 @@ func displayBestOptions() {
 
 		fmt.Println(utility.LowestCurrentPrices(gamesCurrent))
 	}
+	return
 }
