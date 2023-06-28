@@ -202,7 +202,7 @@ func displayBestOptions() error {
 	utility.Check(err)
 
 	if files == nil {
-		return errors.New("No files in directory")
+		return errors.New("no files in directory")
 	}
 
 	for _, file := range files {
@@ -214,5 +214,5 @@ func displayBestOptions() error {
 
 		fmt.Println(utility.LowestCurrentPrices(gamesCurrent))
 	}
-	return
+	return nil
 }
