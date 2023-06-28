@@ -28,6 +28,7 @@ func readCmd() {
 		checkForInputFile()
 		checkLinks()
 		checkHistory()
+		displayBestOptions()
 		return
 	}
 

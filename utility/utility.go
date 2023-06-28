@@ -2,6 +2,8 @@ package utility
 
 import (
 	"os"
+	"os/exec"
+	"runtime"
 
 	"github.com/gen2brain/beeep"
 )
@@ -31,4 +33,18 @@ func CheckForDataFolder() {
 		err := os.Mkdir("./data", 0755)
 		Check(err)
 	}
+}
+
+func openBrowser(url string) bool {
+	var args []string
+	switch runtime.GOOS {
+	case "darwin":
+		args = []string{"open"}
+	case "windows":
+		args = []string{"cmd", "/c", "start"}
+	default:
+		args = []string{"xdg-open"}
+	}
+	cmd := exec.Command(args[0], append(args[1:], url)...)
+	return cmd.Start() == nil
 }
