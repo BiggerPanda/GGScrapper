@@ -212,7 +212,16 @@ func displayBestOptions() error {
 		err = json.Unmarshal(contentCurrent, &gamesCurrent)
 		utility.Check(err)
 
-		fmt.Println(utility.LowestCurrentPrices(gamesCurrent))
+		offers := utility.LowestCurrentPrices(gamesCurrent)
+		if len(offers) > 0 {
+			fmt.Println("Best offer for: ", strings.TrimRight(file.Name(), ".json"))
+			for _, offer := range offers {
+				fmt.Println("--------------------------------------------------")
+				fmt.Println(offer.Name, offer.ShopName, offer.Price[0])
+				fmt.Println("Link: ", offer.Link)
+				fmt.Println("--------------------------------------------------")
+			}
+		}
 	}
 	return nil
 }
