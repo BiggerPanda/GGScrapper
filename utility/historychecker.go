@@ -1,6 +1,7 @@
 package utility
 
 import (
+	"fmt"
 	"os"
 	"regexp"
 	"strconv"
@@ -25,6 +26,8 @@ func ParsePrice(price string) []float64 {
 	for _, p := range r.FindAllString(price, -1) {
 		p = strings.Replace(p, ",", ".", -1)
 		if s, err := strconv.ParseFloat(p, 32); err == nil {
+			i := fmt.Sprintf("%.2f", s)
+			s, _ := strconv.ParseFloat(i, 2)
 			prices = append(prices, s)
 		}
 	}
