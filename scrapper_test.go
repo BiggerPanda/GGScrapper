@@ -13,7 +13,9 @@ func TestParsePrice(t *testing.T) {
 		name string
 		args args
 		want []float64
-	}{{"test1", args{"<span class=\"price\">$ 1,99</span>"}, []float64{1.99}}}
+	}{{"test1", args{"<span class=\"price\">$ 1,99</span>"}, []float64{1.99}},
+		{"test2", args{"<span class=\"price\">$ 1,99</span><span class=\"price\">$ 2,99</span>"}, []float64{1.99, 2.99}},
+		{"test3", args{"<span class=\"price\">$ 1,99</span><span class=\"price\">$ 2,99</span><span class=\"price\">$ 3,99</span>"}, []float64{1.99, 2.99, 3.99}}}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
