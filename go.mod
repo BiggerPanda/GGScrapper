@@ -23,6 +23,7 @@ require (
 )
 
 replace web-scrapper/utility => ./utility
+
 replace web-scrapper/models => ./models
 
 require (
@@ -32,6 +33,6 @@ require (
 	github.com/nu7hatch/gouuid v0.0.0-20131221200532-179d4d0c4d8d // indirect
 	github.com/tadvi/systray v0.0.0-20190226123456-11a2b8fa57af // indirect
 	golang.org/x/sys v0.9.0 // indirect
-	web-scrapper/utility v0.0.0-00010101000000-000000000000 // indirect
-	web-scrapper/models v0.0.0-00010101000000-000000000000 
+	web-scrapper/models v0.0.0-00010101000000-000000000000
+	web-scrapper/utility v0.0.0-00010101000000-000000000000
 )

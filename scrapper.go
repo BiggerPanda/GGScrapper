@@ -38,7 +38,43 @@ func readCmd() {
 			err := displayBestOptions()
 			utility.Check(err)
 		}
+
+		if arg == "openBest" {
+			err := openBestOptions()
+			utility.Check(err)
+		}
 	}
+}
+
+func openBestOptions() error {
+	var gamesCurrent []models.Game
+	files, err := ioutil.ReadDir("./data")
+	utility.Check(err)
+
+	if files == nil {
+		return errors.New("no files in directory")
+	}
+
+	for _, file := range files {
+		contentCurrent, err := ioutil.ReadFile("./data/" + file.Name())
+		utility.Check(err)
+
+		err = json.Unmarshal(contentCurrent, &gamesCurrent)
+		utility.Check(err)
+
+		offers := utility.LowestCurrentPrices(gamesCurrent)
+		if len(offers) > 0 {
+			for _, offer := range offers {
+				if utility.OpenBrowser(offer.Link) {
+					fmt.Println("Opening: ", offer.Name)
+				} else {
+					fmt.Println("Error opening: ", offer.Name)
+				}
+
+			}
+		}
+	}
+	return nil
 }
 
 func deleteCache() {

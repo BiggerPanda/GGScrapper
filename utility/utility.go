@@ -35,7 +35,7 @@ func CheckForDataFolder() {
 	}
 }
 
-func openBrowser(url string) bool {
+func OpenBrowser(url string) bool {
 	var args []string
 	switch runtime.GOOS {
 	case "darwin":
