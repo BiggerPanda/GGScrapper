@@ -32,8 +32,7 @@ func TestBrowserOpen(t *testing.T) {
 		name string
 		args args
 		want bool
-	}{{"test1", args{"https://www.google.com/"}, false}, // check if test works
-		{"test2", args{"https://www.google.com/"}, true}}
+	}{{"test1", args{"https://www.google.com/"}, true}}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
