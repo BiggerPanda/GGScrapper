@@ -70,7 +70,6 @@ func openBestOptions() error {
 				} else {
 					fmt.Println("Error opening: ", offer.Name)
 				}
-
 			}
 		}
 	}
@@ -235,7 +234,6 @@ func checkForInputFile() {
 			utility.Check(err)
 		}
 		utility.Check(err)
-
 	}
 }
 

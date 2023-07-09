@@ -22,5 +22,24 @@ func TestParsePrice(t *testing.T) {
 			}
 		})
 	}
+}
 
+func TestBrowserOpen(t *testing.T) {
+	type args struct {
+		url string
+	}
+	tests := []struct {
+		name string
+		args args
+		want bool
+	}{{"test1", args{"https://www.google.com/"}, false}, // check if test works
+		{"test2", args{"https://www.google.com/"}, true}}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := utility.OpenBrowser(tt.args.url); got != tt.want {
+				t.Errorf("OpenBrowser() = %v, want %v", got, tt.want)
+			}
+		})
+	}
 }
