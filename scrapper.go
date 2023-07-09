@@ -29,6 +29,7 @@ func readCmd() {
 		checkLinks()
 		checkHistory()
 		displayBestOptions()
+		deleteCache()
 		return
 	}
 
@@ -38,6 +39,11 @@ func readCmd() {
 			utility.Check(err)
 		}
 	}
+}
+
+func deleteCache() {
+	err := os.RemoveAll("./ggdeals_cache")
+	utility.Check(err)
 }
 
 func initCollector(c *colly.Collector, games *[]models.Game) {
